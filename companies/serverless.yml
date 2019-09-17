@@ -1,0 +1,52 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: companies
+
+# Remember to install project dependencies to register the provider plugin.
+# $ npm install
+provider:
+  name: openwhisk
+  runtime: nodejs:default
+
+functions:
+  companyCreate:
+    handler: handler.create
+    annotations:
+      web-export: false
+    events:
+      - http:
+          method: post
+          path: /companies/create
+
+resources:
+  apigw:
+    auth:
+      key: X-IBM-NUCONT
+
+# extend the framework using plugins listed here:
+# https://github.com/serverless/plugins
+plugins:
+  - serverless-openwhisk
+  - serverless-webpack
+
+# serverless optimization
+package:
+  individually: true
+
+# serverless-webpack configuration
+# Enable auto-packing of external modules
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
