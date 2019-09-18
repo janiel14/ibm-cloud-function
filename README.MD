@@ -50,6 +50,7 @@ npm install -g serverless
 
 ```javascript
 npm install serverless-openwhisk --save-dev
+npm install serverless-webpack --save-dev
 ```
 
 3. Configurando credênciais de acesso a IBM cloud
@@ -84,6 +85,18 @@ serverless create --template openwhisk-nodejs --path <MY_FOLDER-IN-PROJECT>
 
 //abra MY_FOLDER-IN-PROJECT
 cd <MY_FOLDER-IN-PROJECT>
+
+//instale as dependencias
+npm install --save source-map-support
+npm install --save-dev @babel/cli@^7.0.0
+npm install --save-dev @babel/core@^7.0.1
+npm install --save-dev @babel/preset-env@^7.0.0
+npm install --save-dev babel-loader@^8.0.0
+npm install --save-dev babel-plugin-source-map-support@^2.0.1
+npm install --save-dev serverless-webpack@^5.2.0
+npm install --save-dev webpack@^4.18.0
+npm install --save-dev webpack-node-externals@^1.7.2
+npm install
 ```
 
 5. Observe que foi criado dentro do diretório arquivos bases de uma function pronta.
@@ -116,6 +129,16 @@ resources:
 
 plugins:
   - serverless-openwhisk
+  - serverless-webpack
+
+package:
+  individually: true
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+
 
 ```
 
@@ -139,6 +162,61 @@ const myCompanies = new companies();
 
 exports.create = (params) => {
     return myCompanies.showform(params);
+};
+```
+5.4. Crie o arquivo de configuração .babelrc
+
+```javascript
+
+{
+  "plugins": ["source-map-support"],
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "node": "8.10"
+        }
+      }
+    ]
+  ]
+}
+```
+
+5.5. Crie o arquivo de configuração do webpack.config.js
+
+```javascript
+const slsw = require('serverless-webpack');
+const nodeExternals = require('webpack-node-externals');
+
+module.exports = {
+  entry: slsw.lib.entries,
+  target: 'node',
+  // Generate sourcemaps for proper error messages
+  devtool: 'source-map',
+  // Since 'aws-sdk' is not compatible with webpack,
+  // we exclude all node dependencies
+  externals: [nodeExternals()],
+  mode: slsw.lib.webpack.isLocal ? 'development' : 'production',
+  optimization: {
+    // We no not want to minimize our code.
+    minimize: false,
+  },
+  performance: {
+    // Turn off size warnings for entry points
+    hints: false,
+  },
+  // Run babel on all .js files and skip those in node_modules
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+        include: __dirname,
+        exclude: /node_modules/,
+      },
+    ],
+  },
 };
 ```
 
