@@ -219,5 +219,34 @@ module.exports = {
   },
 };
 ```
+6. Para fazer o deploy da function
 
-6. Vá até o painel IBM na instancia functions, em API e depois em SHARING e crie uma key para ser usada na requisição da API. A key deve estar em uma variável de ambiente por segurança.
+```javascript
+serverless deploy
+```
+
+7. Vá até o painel IBM na instancia functions, em API e depois em SHARING e crie uma key para ser usada na requisição da API. A key deve estar em uma variável de ambiente por segurança.
+
+7.1 Chamando a api usando Meteor
+
+```javascript
+// use meteor add http
+import { HTTP } from 'meteor/http';
+
+HTTP.call('POST', 'API_URL', {
+  headers: {
+      "X-IBM-NUCONT": "API KEY item 7."
+  },
+  data: { 
+    some: 'json', 
+    stuff: 1 
+  }
+}, (error, result) => {
+  if (error) {
+     console.log("Error: ", error);
+  } else {
+    console.log("Result: ", result)
+  }
+});
+
+``` 
